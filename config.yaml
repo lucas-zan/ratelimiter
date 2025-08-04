@@ -2,7 +2,7 @@ server:
   port: ":8080"
 
 redis:
-  addr: "single-redis.meditrusthealth.com:6378"
+  addr: "localhost:6379"
   password: ""
   db: 0
   pool_size: 10
