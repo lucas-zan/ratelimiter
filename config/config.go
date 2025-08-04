@@ -16,6 +16,7 @@ type ServerConfig struct {
 }
 
 type RedisConfig struct {
+	// Single node configuration
 	Addr         string        `yaml:"addr" default:"localhost:6379"`
 	Password     string        `yaml:"password"`
 	DB           int           `yaml:"db" default:"0"`
@@ -24,6 +25,13 @@ type RedisConfig struct {
 	DialTimeout  time.Duration `yaml:"dial_timeout" default:"5s"`
 	ReadTimeout  time.Duration `yaml:"read_timeout" default:"3s"`
 	WriteTimeout time.Duration `yaml:"write_timeout" default:"3s"`
+
+	// Cluster configuration
+	Cluster *RedisClusterConfig `yaml:"cluster"`
+}
+
+type RedisClusterConfig struct {
+	Nodes []string `yaml:"nodes"`
 }
 
 type LimiterConfig struct {

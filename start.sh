@@ -3,7 +3,7 @@
 # Rate Limiter Service Startup Script
 SERVICE_NAME="rate-limiter"
 PID_FILE="./logs/rate-limiter.pid"
-LOG_FILE="./logs/rate-limiter.log"
+LOG_FILE="./logs/rate-limiter-$(date +%Y%m%d%H).log"
 CONFIG_FILE="config.yaml"
 
 # Color definitions

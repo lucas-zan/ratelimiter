@@ -9,7 +9,9 @@ A high-performance rate limiting service built with Go and Redis, implementing t
 - **Flexible Key Format**: Support custom key patterns for various use cases
 - **Real-time Monitoring**: Complete statistics and monitoring interfaces
 - **High Availability**: Redis connection pooling with retry mechanisms
+- **Redis Cluster Support**: Support both single node and cluster Redis deployments
 - **Structured Logging**: JSON logging with rotation and compression
+- **Time-based Log Files**: Log files named with timestamp (rate-limiter-{yyyymmddhh}.log)
 - **Swagger Documentation**: Interactive API documentation
 - **Docker Support**: Containerized deployment with Docker Compose
 
@@ -128,6 +130,8 @@ export LOG_LEVEL=info
 ```
 
 ### Configuration File (config.yaml)
+
+#### Single Node Redis Configuration
 ```yaml
 server:
   port: ":8080"
@@ -138,6 +142,46 @@ redis:
   db: 0
   pool_size: 10
   min_idle_conns: 5
+  dial_timeout: "5s"
+  read_timeout: "3s"
+  write_timeout: "3s"
+
+limiter:
+  default_rate: 10
+  default_burst: 50
+
+log:
+  level: "info"
+  format: "json"
+  output: "file"
+  file_path: "logs"
+  max_size: 100
+  max_backups: 10
+  max_age: 30
+  compress: true
+```
+
+#### Redis Cluster Configuration
+```yaml
+server:
+  port: ":8080"
+
+redis:
+  cluster:
+    nodes:
+      - "redis-node1:7000"
+      - "redis-node2:7000"
+      - "redis-node3:7000"
+      - "redis-node1:7001"
+      - "redis-node2:7001"
+      - "redis-node3:7001"
+  
+  password: ""
+  pool_size: 10
+  min_idle_conns: 5
+  dial_timeout: "5s"
+  read_timeout: "3s"
+  write_timeout: "3s"
 
 limiter:
   default_rate: 10
@@ -180,7 +224,7 @@ The service supports flexible key formats:
 ├── handler/             # HTTP handlers
 ├── logger/              # Logging system
 ├── scripts/             # Utility scripts
-├── logs/                # Log files
+├── logs/                # Log files (rate-limiter-{yyyymmddhh}.log)
 └── test/                # Test scripts
 ```
 
@@ -188,7 +232,7 @@ The service supports flexible key formats:
 
 - **Go 1.23+**: Primary language
 - **Gin**: HTTP web framework
-- **Redis**: Data storage and token bucket
+- **Redis**: Data storage and token bucket (single node & cluster)
 - **Zap**: High-performance logging
 - **Lumberjack**: Log rotation
 - **Swagger**: API documentation
@@ -197,7 +241,7 @@ The service supports flexible key formats:
 
 ### Prerequisites
 - Go 1.23+
-- Redis 6.0+
+- Redis 6.0+ (single node or cluster)
 - Docker & Docker Compose (optional)
 
 ### Testing
@@ -211,8 +255,8 @@ go test ./...
 
 ### Logging
 ```bash
-# View real-time logs
-tail -f logs/rate-limiter.log
+# View real-time logs (current hour)
+tail -f logs/rate-limiter-$(date +%Y%m%d%H).log
 
 # View logs with script
 ./scripts/view_logs.sh

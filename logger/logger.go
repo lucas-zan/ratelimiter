@@ -13,9 +13,20 @@ import (
 )
 
 var Logger *zap.Logger
+var logFileTimestamp string
+
+// generateLogFileName generates log filename with startup timestamp
+func generateLogFileName() string {
+	return fmt.Sprintf("rate-limiter-%s.log", logFileTimestamp)
+}
 
 // InitLogger 初始化日志系统
 func InitLogger(cfg *config.LogConfig) error {
+	// 只在服务启动时生成一次时间戳
+	if logFileTimestamp == "" {
+		logFileTimestamp = time.Now().Format("2006010215")
+	}
+
 	// 创建日志目录
 	if cfg.Output == "file" {
 		if err := os.MkdirAll(cfg.FilePath, 0755); err != nil {
@@ -47,9 +58,9 @@ func InitLogger(cfg *config.LogConfig) error {
 	// 创建输出
 	var writeSyncer zapcore.WriteSyncer
 	if cfg.Output == "file" {
-		// 文件输出，支持日志轮转
+		logFileName := generateLogFileName()
 		writer := &lumberjack.Logger{
-			Filename:   filepath.Join(cfg.FilePath, "rate-limiter.log"),
+			Filename:   filepath.Join(cfg.FilePath, logFileName),
 			MaxSize:    cfg.MaxSize, // MB
 			MaxBackups: cfg.MaxBackups,
 			MaxAge:     cfg.MaxAge, // days
@@ -57,16 +68,11 @@ func InitLogger(cfg *config.LogConfig) error {
 		}
 		writeSyncer = zapcore.AddSync(writer)
 	} else {
-		// 标准输出
 		writeSyncer = zapcore.AddSync(os.Stdout)
 	}
 
-	// 创建核心
 	core := zapcore.NewCore(encoder, writeSyncer, level)
-
-	// 创建日志器
 	Logger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zapcore.ErrorLevel))
-
 	return nil
 }
 

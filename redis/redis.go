@@ -11,17 +11,26 @@ import (
 	"github.com/your-org/rate-limiter/logger"
 )
 
-var Client *redis.Client
+var Client redis.Cmdable
 
-// Init initializes Redis connection
+// Init initializes Redis connection (single node or cluster)
 func Init(cfg *config.RedisConfig) error {
-	logger.Info("Initializing Redis connection",
+	// Check if cluster configuration is provided
+	if cfg.Cluster != nil && len(cfg.Cluster.Nodes) > 0 {
+		return initCluster(cfg)
+	}
+	return initSingleNode(cfg)
+}
+
+// initSingleNode initializes single node Redis connection
+func initSingleNode(cfg *config.RedisConfig) error {
+	logger.Info("Initializing single node Redis connection",
 		logger.String("addr", cfg.Addr),
 		logger.Int("db", cfg.DB),
 		logger.Int("pool_size", cfg.PoolSize),
 	)
 
-	Client = redis.NewClient(&redis.Options{
+	client := redis.NewClient(&redis.Options{
 		Addr:         cfg.Addr,
 		Password:     cfg.Password,
 		DB:           cfg.DB,
@@ -36,16 +45,54 @@ func Init(cfg *config.RedisConfig) error {
 		MaxRetryBackoff: 512 * time.Millisecond,
 	})
 
+	Client = client
+
 	// Test connection
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := Client.Ping(ctx).Err(); err != nil {
+	if err := client.Ping(ctx).Err(); err != nil {
 		logger.Error("Failed to connect to Redis", logger.ErrorField(err))
 		return fmt.Errorf("failed to connect to Redis: %w", err)
 	}
 
-	logger.Info("Redis connection established successfully")
+	logger.Info("Single node Redis connection established successfully")
+	return nil
+}
+
+// initCluster initializes Redis cluster connection
+func initCluster(cfg *config.RedisConfig) error {
+	logger.Info("Initializing Redis cluster connection",
+		logger.Any("nodes", cfg.Cluster.Nodes),
+		logger.Int("pool_size", cfg.PoolSize),
+	)
+
+	client := redis.NewClusterClient(&redis.ClusterOptions{
+		Addrs:        cfg.Cluster.Nodes,
+		Password:     cfg.Password,
+		PoolSize:     cfg.PoolSize,
+		MinIdleConns: cfg.MinIdleConns,
+		DialTimeout:  cfg.DialTimeout,
+		ReadTimeout:  cfg.ReadTimeout,
+		WriteTimeout: cfg.WriteTimeout,
+		// Connection pool configuration
+		MaxRetries:      3,
+		MinRetryBackoff: 8 * time.Millisecond,
+		MaxRetryBackoff: 512 * time.Millisecond,
+	})
+
+	Client = client
+
+	// Test connection
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := client.Ping(ctx).Err(); err != nil {
+		logger.Error("Failed to connect to Redis cluster", logger.ErrorField(err))
+		return fmt.Errorf("failed to connect to Redis cluster: %w", err)
+	}
+
+	logger.Info("Redis cluster connection established successfully")
 	return nil
 }
 
@@ -53,7 +100,12 @@ func Init(cfg *config.RedisConfig) error {
 func Close() error {
 	if Client != nil {
 		logger.Info("Closing Redis connection")
-		return Client.Close()
+		switch client := Client.(type) {
+		case *redis.Client:
+			return client.Close()
+		case *redis.ClusterClient:
+			return client.Close()
+		}
 	}
 	return nil
 }

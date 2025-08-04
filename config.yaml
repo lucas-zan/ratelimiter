@@ -2,9 +2,20 @@ server:
   port: ":8080"
 
 redis:
+  # Single node configuration (uncomment to use)
   addr: "localhost:6379"
+  # Cluster configuration (uncomment to use)
+  # cluster:
+  #   nodes:
+  #     - "uat.redis.03.ykf.mth:7000"
+  #     - "uat.redis.02.ykf.mth:7000"
+  #     - "uat.redis.01.ykf.mth:7000"
+  #     - "uat.redis.03.ykf.mth:7001"
+  #     - "uat.redis.02.ykf.mth:7001"
+  #     - "uat.redis.01.ykf.mth:7001"
+  
+  # Common settings for both single node and cluster
   password: ""
-  db: 0
   pool_size: 10
   min_idle_conns: 5
   dial_timeout: "5s"
@@ -12,15 +23,15 @@ redis:
   write_timeout: "3s"
 
 limiter:
-  default_rate: 10   # 默认每秒令牌生成速率
-  default_burst: 50  # 默认桶容量
+  default_rate: 10
+  default_burst: 50
 
 log:
-  level: "info"        # 日志级别: debug, info, warn, error
-  format: "json"       # 日志格式: json, console
-  output: "file"       # 输出位置: stdout, file
-  file_path: "logs"    # 日志文件路径
-  max_size: 100        # 单个日志文件最大大小(MB)
-  max_backups: 10      # 最大备份文件数
-  max_age: 30          # 日志文件保留天数
-  compress: true       # 是否压缩旧日志文件 
+  level: "info"
+  format: "json"
+  output: "file"
+  file_path: "logs"
+  max_size: 100
+  max_backups: 10
+  max_age: 30
+  compress: true 

@@ -1,1 +1,21 @@
+# Log files and directories
 logs/
+*.log
+
+# Build artifacts
+rate-limiter
+*.exe
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
