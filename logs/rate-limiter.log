@@ -1,0 +1,11 @@
+{"level":"INFO","timestamp":"2025-08-04T16:32:48.499+0800","caller":"logger/logger.go:89","msg":"Starting Rate Limiter Service","version":"1.0.0","config_file":"config.yaml"}
+{"level":"INFO","timestamp":"2025-08-04T16:32:48.500+0800","caller":"logger/logger.go:89","msg":"Configuration loaded","server_port":":8080","redis_addr":"single-redis.meditrusthealth.com:6378","default_rate":10,"default_burst":50,"log_level":"info","log_output":"file"}
+{"level":"INFO","timestamp":"2025-08-04T16:32:48.500+0800","caller":"logger/logger.go:89","msg":"Initializing Redis connection"}
+{"level":"INFO","timestamp":"2025-08-04T16:32:48.500+0800","caller":"logger/logger.go:89","msg":"Initializing Redis connection","addr":"single-redis.meditrusthealth.com:6378","db":0,"pool_size":10}
+{"level":"INFO","timestamp":"2025-08-04T16:32:48.606+0800","caller":"logger/logger.go:89","msg":"Redis connection established successfully"}
+{"level":"INFO","timestamp":"2025-08-04T16:32:48.606+0800","caller":"logger/logger.go:89","msg":"Setting up routes"}
+{"level":"INFO","timestamp":"2025-08-04T16:32:48.606+0800","caller":"logger/logger.go:89","msg":"Routes setup completed"}
+{"level":"INFO","timestamp":"2025-08-04T16:32:48.606+0800","caller":"logger/logger.go:89","msg":"Server starting","port":":8080"}
+{"level":"INFO","timestamp":"2025-08-04T16:32:53.331+0800","caller":"logger/logger.go:89","msg":"Shutting down server..."}
+{"level":"INFO","timestamp":"2025-08-04T16:32:53.331+0800","caller":"logger/logger.go:89","msg":"Closing Redis connection"}
+{"level":"INFO","timestamp":"2025-08-04T16:32:53.331+0800","caller":"logger/logger.go:89","msg":"Closing Redis connection"}

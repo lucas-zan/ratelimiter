@@ -1,0 +1,210 @@
+basePath: /
+definitions:
+  handler.CheckReq:
+    properties:
+      key:
+        description: Rate limiting key (user-defined format)
+        example: your_api_key:gpt-4
+        type: string
+    required:
+    - key
+    type: object
+  handler.CheckResp:
+    properties:
+      allowed:
+        description: Whether the request is allowed
+        example: true
+        type: boolean
+      message:
+        description: Error message (if any)
+        example: ""
+        type: string
+      remain:
+        description: Number of remaining tokens
+        example: 45
+        type: integer
+    type: object
+  handler.StatsResp:
+    properties:
+      rules:
+        additionalProperties:
+          additionalProperties: true
+          type: object
+        description: Rate limiting rules
+        type: object
+      stats:
+        additionalProperties:
+          additionalProperties: true
+          type: object
+        description: Statistics for each rule
+        type: object
+    type: object
+  handler.UpdateRuleReq:
+    properties:
+      burst:
+        description: Bucket capacity, optional
+        example: 50
+        type: integer
+      key:
+        description: Rate limiting key (user-defined format)
+        example: your_api_key:gpt-4
+        type: string
+      rate_limit:
+        description: Tokens per second
+        example: 10
+        type: integer
+    required:
+    - key
+    - rate_limit
+    type: object
+  handler.UpdateRuleResp:
+    properties:
+      message:
+        description: Response message
+        example: Rule updated
+        type: string
+      status:
+        description: Status of the operation
+        example: success
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: A rate limiting service based on Go and Redis, supporting token bucket
+    algorithm with flexible rate limiting rule configuration and monitoring capabilities.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Rate Limiter Service API
+  version: "1.0"
+paths:
+  /v1/check_rate_limit:
+    post:
+      consumes:
+      - application/json
+      description: Check if the current request is allowed based on rate limiting
+        rules
+      parameters:
+      - description: Rate limit check request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CheckReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CheckResp'
+        "400":
+          description: Invalid request parameters
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Check rate limit status
+      tags:
+      - rate-limit
+  /v1/rule_stats:
+    get:
+      consumes:
+      - application/json
+      description: Get monitoring statistics for a specific rate limiting key
+      parameters:
+      - description: Rate limiting key
+        in: query
+        name: key
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Missing required parameters
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get specific rule statistics
+      tags:
+      - monitoring
+  /v1/stats:
+    get:
+      consumes:
+      - application/json
+      description: Get comprehensive monitoring statistics for all rate limiting rules
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.StatsResp'
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all monitoring statistics
+      tags:
+      - monitoring
+  /v1/update_rule:
+    post:
+      consumes:
+      - application/json
+      description: Update or create a new rate limiting rule for the specified API
+        key and model
+      parameters:
+      - description: Rate limiting rule update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateRuleReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UpdateRuleResp'
+        "400":
+          description: Invalid request parameters
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update rate limiting rule
+      tags:
+      - rate-limit
+securityDefinitions:
+  ApiKeyAuth:
+    description: API key for authentication
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
